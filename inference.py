@@ -111,31 +111,7 @@ def extract_final_features(src_loader, tgt_loader, domain_model, eeg_model, src_
         concatenated_features = torch.cat(all_final_features, dim=0)
     return concatenated_features
 
-class SharedLinearMLP(nn.Module):
-    def __init__(self, input_dims, shared_dim, output_dims):
-        super(SharedLinearMLP, self).__init__()
-        self.feature_extractor = nn.ModuleList([
-            nn.Sequential(
-                nn.Linear(input_dim, 2048),
-                nn.ReLU(),
-                nn.Linear(2048, 1024),
-                nn.ReLU(),
-                nn.Linear(1024, 2048)
-            ) for input_dim in input_dims
-        ])
-        self.output_fc = nn.ModuleList([nn.Linear(shared_dim, output_dim) for output_dim in output_dims])
-        self.activation = nn.LeakyReLU(0.01)
-        self.shared_fc = nn.Linear(shared_dim, shared_dim)
 
-    def forward(self, x, src_label, tgt_label):
-        input_layer = self.feature_extractor[src_label]
-        output_layer = self.output_fc[tgt_label]
-        shared = input_layer(x)
-        shared = self.activation(shared)
-        shared = self.shared_fc(shared)
-        shared = self.activation(shared)
-        final_output = output_layer(shared)
-        return final_output
 
 def main(args):
     model, preprocess = load_clip_model()
